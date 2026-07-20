@@ -42,12 +42,12 @@ def get_post(postid_url_slug):
 @insta485.app.route('/api/v1/posts/')
 def get_newest_posts():
   """ Return the 10 newest posts from following or logname."""
-  if not authenticate_user():
+  logname = authenticate_user()
+  if not logname:
     return flask.jsonify({
-        "message": "Forbidden",
-        "status_code": 403
+      "message": "Forbidden",
+      "status_code": 403
     }), 403
-  logname = flask.session['username']
 
   try:
     size = flask.request.args.get('size', 10, type=int)
@@ -57,6 +57,7 @@ def get_newest_posts():
 
   if size <= 0 or page < 0:
     flask.abort(400)
+  connection = insta485.model.get_db()
 
   postid_leq = flask.request.args.get('postid_leq', type=int)
   if postid_leq is None:
@@ -69,15 +70,14 @@ def get_newest_posts():
   newest_posts = connection.execute(
     """
     SELECT postid FROM posts
-    WHERE post id <= ?
+    WHERE postid <= ?
     AND owner = ?
     OR owner IN (SELECT followee FROM following WHERE follower = ?)
     ORDER BY postid DESC
     LIMIT ?
-    OFFFSET ?
-    (postid_leq, logname, logname, size, size * page)
+    OFFSET ?
     """,
-    (postid)
+    (postid_leq, logname, logname, size, size * page)
   ).fetchall()
 
   results = [
@@ -91,7 +91,7 @@ def get_newest_posts():
       f"/api/v1/posts/?size={size}&page={page + 1}&postid_leq={postid_leq}"
     )
   context = {
-    "next": next_url,
+    "next": next,
     "results": results,
     "url": flask.request.path,
   }
