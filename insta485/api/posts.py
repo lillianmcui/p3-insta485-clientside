@@ -111,12 +111,12 @@ def get_newest_posts():
         flask.abort(400)
     connection = insta485.model.get_db()
 
-    postid_leq = flask.request.args.get('postid_leq', type=int)
-    if postid_leq is None:
+    postid_lte = flask.request.args.get('postid_lte', type=int)
+    if postid_lte is None:
         row = connection.execute(
           "SELECT MAX(postid) AS max_postid FROM posts"
         ).fetchone()
-        postid_leq = row['max_postid'] if row['max_postid'] is not None else 0
+        postid_lte = row['max_postid'] if row['max_postid'] is not None else 0
 
     connection = insta485.model.get_db()
     newest_posts = connection.execute(
@@ -129,7 +129,7 @@ def get_newest_posts():
         LIMIT ?
         OFFSET ?
         """,
-        (postid_leq, logname, logname, size, size * page)
+        (postid_lte, logname, logname, size, size * page)
     ).fetchall()
 
     results = [
@@ -140,11 +140,16 @@ def get_newest_posts():
     next = ''
     if len(results) >= size:
         next = (
-          f"/api/v1/posts/?size={size}&page={page + 1}&postid_leq={postid_leq}"
+          f"/api/v1/posts/?size={size}&page={page + 1}&postid_lte={postid_lte}"
         )
+    if flask.request.query_string:
+      url = flask.request.full_path
+    else:
+      url = flask.request.path
+    
     context = {
       "next": next,
       "results": results,
-      "url": flask.request.path,
+      "url": url,
     }
     return flask.jsonify(**context)

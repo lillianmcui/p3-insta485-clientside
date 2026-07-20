@@ -1,10 +1,7 @@
 """REST API for likes."""
 import flask
 import insta485
-
-
 from insta485.api.routes import authenticate_user
-
 
 @insta485.app.route("/api/v1/likes/", methods=["POST"])
 def api_update_likes():
