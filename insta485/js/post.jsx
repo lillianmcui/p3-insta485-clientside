@@ -39,7 +39,7 @@ export default function Post({ url }) {
   // Render post image and post owner
   return (
     <div className="post">
-      <img src={imgUrl} alt="post_image" />
+      <img src={imgUrl} alt="post_image"/>
       <p>{owner}</p>
     </div>
   );
