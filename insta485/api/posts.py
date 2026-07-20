@@ -6,37 +6,88 @@ from insta485.api.routes import authenticate_user
 
 @insta485.app.route('/api/v1/posts/<int:postid_url_slug>/')
 def get_post(postid_url_slug):
-    """Return post on postid.
+  """Return post on postid."""
 
-    Example:
-    {
-      "created": "2017-09-28 04:33:28",
-      "imgUrl": "/uploads/122a7d27ca1d7420a1072f695d9290fad4501a41.jpg",
-      "owner": "awdeorio",
-      "ownerImgUrl": "/uploads/e1a7c5c32973862ee15173b0259e3efdb6a391af.jpg",
-      "ownerShowUrl": "/users/awdeorio/",
-      "postShowUrl": "/posts/1/",
-      "postid": 1,
-      "url": "/api/v1/posts/1/"
-    }
+  # auth user
+  logname = authenticate_user()
+  if not logname:
+    return flask.jsonify({
+      "message": "Forbidden",
+      "status_code": 403
+    }), 403
+  connection = insta485.model.get_db()
+
+  # post/owner info
+  post_cur = connection.execute(
     """
-    if not authenticate_user():
+    SELECT posts.postid, posts.filename, posts.owner, posts.created, users.filename AS ownerImgUrl
+    FROM posts
+    JOIN users ON posts.owner = users.username
+    WHERE posts.postid = ?
+    """,
+    (postid_url_slug,)
+  )
+  post = post_cur.fetchone()
+  if not post:
       return flask.jsonify({
-          "message": "Forbidden",
-          "status_code": 403
-      }), 403
+          "message": "Post Not Found",
+          "status_code": 404
+      }), 404
 
-    context = {
-        "created": "2017-09-28 04:33:28",
-        "imgUrl": "/uploads/122a7d27ca1d7420a1072f695d9290fad4501a41.jpg",
-        "owner": "awdeorio",
-        "ownerImgUrl": "/uploads/e1a7c5c32973862ee15173b0259e3efdb6a391af.jpg",
-        "ownerShowUrl": "/users/awdeorio/",
-        "postShowUrl": f"/posts/{postid_url_slug}/",
-        "postid": postid_url_slug,
-        "url": flask.request.path,
-    }
-    return flask.jsonify(**context)
+  # likes
+  likes_cur = connection.execute(
+    "SELECT COUNT(*) AS count FROM likes WHERE postid = ?",
+    (postid_url_slug,)
+  )
+  likes = likes_cur.fetchone()["count"]
+
+  logname_like_cur = connection.execute(
+      "SELECT likeid FROM likes WHERE owner = ? AND postid = ?",
+      (logname, postid_url_slug)
+  )
+  logname_like = logname_like_cur.fetchone()
+  if  logname_like:
+      logname_likes_this = True
+      like_url = f"/api/v1/likes/{logname_like['likeid']}/"
+  else:
+      logname_likes_this = False
+      like_url = None
+
+  # comments
+  comments_cur = connection.execute(
+        "SELECT commentid, owner, text FROM comments WHERE postid = ? ORDER BY commentid ASC",
+        (postid_url_slug,)
+    )
+  comments_rows = comments_cur.fetchall()
+  comments = []
+  for row in comments_rows:
+      comments.append({
+          "commentid": row["commentid"],
+          "lognameOwnsThis": row["owner"] == logname,
+          "owner": row["owner"],
+          "ownerShowUrl": f"/users/{row['owner']}/",
+          "text": row["text"],
+          "url": f"/api/v1/comments/{row['commentid']}/"
+      })
+
+  context = {
+    "comments": comments,
+    "comments_url": f"/api/v1/comments/?postid={postid_url_slug}",
+    "created": post["created"],
+    "imgUrl": f"/uploads/{post['filename']}",
+    "likes": {
+        "lognameLikesThis": logname_likes_this,
+        "numLikes": likes,
+        "url": like_url
+    },
+    "owner": post["owner"],
+    "ownerImgUrl": f"/uploads/{post['ownerImgUrl']}",
+    "ownerShowUrl": f"/users/{post['owner']}/",
+    "postShowUrl": f"/posts/{postid_url_slug}/",
+    "postid": postid_url_slug,
+    "url": f"/api/v1/posts/{postid_url_slug}/"
+  }
+  return flask.jsonify(**context)
 
 
 @insta485.app.route('/api/v1/posts/')
