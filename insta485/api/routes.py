@@ -14,12 +14,11 @@ def get_urls():
     return flask.jsonify(**context)
 
 def authenticate_user():
-    """
-    Authenticate user credentials.
-    """
+    """ Authenticate user credentials, return username."""
+
     # check via cookie
     if 'username' in flask.session:
-        return True
+        return flask.session["username"]
 
     # check user and password via http authenticate
     username = flask.request.authorization['username']
@@ -32,7 +31,7 @@ def authenticate_user():
     )
     user = cur.fetchone()
     if not user:
-        return False
+        return None
     password_db_string = user["password"]
     # hash password
     algorithm, salt, stored_hash = password_db_string.split("$")
@@ -41,11 +40,11 @@ def authenticate_user():
     hash_obj.update(password_salted.encode('utf-8'))
     password_hash = hash_obj.hexdigest()
     if password_hash != stored_hash:
-        return False
-    return True
-    
-    
+        return None
+    return username
 
-    
+
+
+
 
 

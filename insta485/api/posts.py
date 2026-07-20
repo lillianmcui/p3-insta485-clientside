@@ -25,7 +25,7 @@ def get_post(postid_url_slug):
           "message": "Forbidden",
           "status_code": 403
       }), 403
-    
+
     context = {
         "created": "2017-09-28 04:33:28",
         "imgUrl": "/uploads/122a7d27ca1d7420a1072f695d9290fad4501a41.jpg",
@@ -48,7 +48,7 @@ def get_newest_posts():
         "status_code": 403
     }), 403
   logname = flask.session['username']
-  
+
   try:
     size = flask.request.args.get('size', 10, type=int)
     page = flask.request.args.get('page', 0, type=int)
@@ -64,13 +64,13 @@ def get_newest_posts():
       "SELECT MAX(postid) AS max_postid FROM posts"
     ).fetchone()
     postid_leq = row['max_postid'] if row['max_postid'] is not None else 0
-  
+
   connection = insta485.model.get_db()
   newest_posts = connection.execute(
     """
     SELECT postid FROM posts
     WHERE post id <= ?
-    AND owner = ? 
+    AND owner = ?
     OR owner IN (SELECT followee FROM following WHERE follower = ?)
     ORDER BY postid DESC
     LIMIT ?
