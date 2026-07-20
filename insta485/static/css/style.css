@@ -1,0 +1,118 @@
+/* stuff for the dashboard page */
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.empty_header{
+    width: 850px;
+    height: 100px;
+}
+
+.header_text {
+    font-size: 14px;
+    font-weight: 600;
+    color: black;
+}
+
+.post {
+    background: white;
+    border: 1px;
+    border-radius: 4px;
+    margin-bottom: 24px;
+    align-items: center;
+}
+
+.post-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.poster {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pfp {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: white;
+}
+
+.username{
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.timestamp {
+    font-size: 12px;
+    color: grey;
+}
+
+.post-image {
+    width: 600px;
+    height: 700px;
+    display: block;
+    background: white;
+}
+
+.likes {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 6px;
+}
+
+.comment {
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.commenter {
+    margin-right: 6px;
+}
+
+/* stuff for the users page */
+
+.profile_username {
+    font-size: 60px;
+    font-weight: 400;
+}
+
+.num_posts {
+    font-size: 14px;
+}
+
+.follow_ratio {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.profile_name{
+    font-size: 13px;
+}
+
+.profile_posts{
+    align-items: center;
+    display: flex;
+    width: 50px;
+    height: 100px;
+    display: block;
+    background: white;
+}
+
+.follow_box {
+    display: flex;
+    align-items: center;       
+    justify-content: space-between; 
+    border: 1px;
+    border-color: grey;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 12px;
+}

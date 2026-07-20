@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <link rel = "stylesheet" href = "/static/css/style.css">
+        <title>insta485</title>
+    </head>
+
+    <body>
+        <header>
+            <div class = "header">
+                <a href = "/">
+                    <img src="/static/images/instagram_logo.jpg" alt="Instagram logo" width = "100" height = "100">
+                </a>
+                
+                <img src = "/static/images/insta485_logo.png" alt = "Insta485 logo" width = "250" height = "100">
+                
+                <div class = "empty_header"></div>
+                
+                <div class = "header_text">
+                    <a href="/explore/">explore</a> | <a href="/users/{{logname}}/">{{ logname }}</a>
+                </div>
+            
+            </div>
+        </header>
+
+        <main>
+            <div class = "post">
+                    <div class = "post-header">
+                        <div class = "poster">
+                            <a href = "/users/{{ post.owner }}/">
+                                <img class = "pfp" src = "{{post.owner_img_url}}" alt = "user.pfp">
+                                <span class = "username">{{post.owner}}</span>
+                            </a>
+                        </div>
+                        <a href = "/posts/{{post.postid}}/">
+                            <span class = "timestamp">{{post.timestamp}}</span>
+                        </a>
+                    </div>
+                    <img class = "post-image" src = "{{post.img_url}}" alt = "post image">
+                    <div class = "post-body">
+                        <div class = "likes">
+                            {% if post.likes == 1 %}
+                                {{post.likes}} like
+                            {% else %}
+                                {{post.likes}} likes
+                            {% endif %}
+                            {% if post.logname_likes %}
+                            <form action="/likes/?target={{ request.path }}" method="post" enctype="multipart/form-data">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="operation" value="unlike"/>
+                                <input type="hidden" name="postid" value="{{post.postid}}"/>
+                                <input type="submit" name="unlike" value="unlike"/>
+                            </form>
+                            {% else %}
+                                <form action="/likes/?target={{ request.path }}" method="post" enctype="multipart/form-data">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="operation" value="like"/>
+                                    <input type="hidden" name="postid" value="{{post.postid}}"/>
+                                    <input type="submit" name="like" value="like"/>
+                                </form>
+                            {% endif %}
+                        </div>
+                        {%for comment in post.comments%}
+                            <div class = "comment">
+                                <a href = "/users/{{comment.owner}}/">
+                                    <span class = "username">{{comment.owner}} </span>
+                                </a>
+                                {{comment.text}}
+                                
+                                {% if comment.owner == logname %}
+                                    <form action="/comments/?target={{request.path}}" method="post" enctype="multipart/form-data">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <input type="hidden" name="operation" value="delete"/>
+                                        <input type="hidden" name="commentid" value="{{comment.commentid}}"/>
+                                        <input type="submit" name="uncomment" value="delete"/>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                        
+                        <form action="/comments/?target={{request.path}}" method="post" enctype="multipart/form-data">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="operation" value="create"/>
+                            <input type="hidden" name="postid" value="{{post.postid}}"/>
+                            <input type="text" name="text" required/>
+                            <input type="submit" name="comment" value="comment"/>
+                        </form>
+
+                        {% if post.owner == logname %}
+                        <form action="/posts/?target=/users/{{ post.owner }}/" method="post" enctype="multipart/form-data">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="operation" value="delete"/>
+                            <input type="hidden" name="postid" value="{{post.postid}}"/>
+                            <input type="submit" name="delete" value="delete this post"/>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+        </main>
+    </body>
+</html>

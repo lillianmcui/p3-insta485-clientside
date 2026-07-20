@@ -1,0 +1,35 @@
+#!/bin/bash
+#
+# insta485run
+#
+# Clean, build and start server
+#
+# Andrew DeOrio <awdeorio@umich.edu>
+
+
+# Stop on errors, print commands
+# See https://vaneyckt.io/posts/safer_bash_scripts_with_set_euxo_pipefail/
+set -Eeuo pipefail
+set -x
+
+# Clean
+# rm -rf insta485_html
+
+# Build
+# insta485generator insta485 -o insta485_html
+
+# Serve
+# cd insta485_html
+# python3 -m http.server 8000
+
+# Check if db exists
+DB_PATH="var/insta485.sqlite3"
+
+if [ ! -f "$DB_PATH" ]; then
+    echo "Error: can't find database $DB_PATH" >&2
+    echo "Try: ./bin/insta485db create" >&2
+    exit 1
+fi
+
+# Run flask app
+flask --app insta485 --debug run --host 0.0.0.0 --port 8000

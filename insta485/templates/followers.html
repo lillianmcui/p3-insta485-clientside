@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <link rel = "stylesheet" href = "/static/css/style.css">
+        <title>insta485</title>
+    </head>
+
+    <body>
+        <header>
+            <div class = "header">
+                <a href = "/">
+                    <img src="/static/images/instagram_logo.jpg" alt="Instagram logo" width = "100" height = "100">
+                </a>
+                
+                <img src = "/static/images/insta485_logo.png" alt = "Insta485 logo" width = "250" height = "100">
+                
+                <div class = "empty_header"></div>
+                
+                <div class = "header_text">
+                    <a href="/explore/">explore</a> | <a href="/users/{{logname}}/">{{ logname }}</a>
+                </div>
+            
+            </div>
+        </header>
+
+        <main>
+            <h2> Followers </h2>
+            {% for follower in followers %}
+            <div class = "follow_box">
+                <img src="{{ follower.user_img_url }}" alt="profile picture" width = 50 height = 50>
+                <a href = "/users/{{follower.username}}/">
+                    <span class = "username">{{follower.username}}</span>
+                </a>
+                {% if logname != follower.username %}
+                {% if follower.logname_follows_username %}
+                <p> following</p>
+                <form action="/following/?target={{request.path}}" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="submit" name="unfollow" value="unfollow"/>
+                    <input type="hidden" name="username" value="{{username}}"/>
+                    <input type="hidden" name="operation" value="unfollow"/>
+                </form>
+                {% else %}
+                <p> not following</p>
+                <form action="/following/?target={{request.path}}" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="submit" name="follow" value="follow"/>
+                    <input type="hidden" name="username" value="{{username}}"/>
+                    <input type="hidden" name="operation" value="follow"/>
+                </form>
+                {% endif %}
+                {% endif %}
+            </div>
+            {% endfor %}
+        </main>
+    </body>
+</html>
