@@ -1,10 +1,12 @@
-""" Rest API for routes."""
+"""Rest API for routes."""
 import flask
 import insta485
 import hashlib
 
+
 @insta485.app.route('/api/v1/')
 def get_urls():
+    """Return urls."""
     context = {
         "comments": "/api/v1/comments/",
         "likes": "/api/v1/likes/",
@@ -13,9 +15,9 @@ def get_urls():
     }
     return flask.jsonify(**context)
 
-def authenticate_user():
-    """ Authenticate user credentials, return username."""
 
+def authenticate_user():
+    """Authenticate user credentials, return username."""
     # check via cookie
     if 'username' in flask.session:
         return flask.session["username"]
@@ -42,9 +44,3 @@ def authenticate_user():
     if password_hash != stored_hash:
         return None
     return username
-
-
-
-
-
-
