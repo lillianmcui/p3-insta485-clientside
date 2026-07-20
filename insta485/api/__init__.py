@@ -7,3 +7,4 @@ from insta485.api.posts import get_newest_posts
 from insta485.api.likes import api_update_likes
 from insta485.api.likes import api_delete_likes
 from insta485.api.comments import post_comment
+from insta485.api.comments import delete_comment

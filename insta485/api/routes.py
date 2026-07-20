@@ -22,9 +22,12 @@ def authenticate_user():
     if 'username' in flask.session:
         return flask.session["username"]
 
+    auth = flask.request.authorization
+    if auth is None:
+        return None
     # check user and password via http authenticate
-    username = flask.request.authorization['username']
-    password = flask.request.authorization['password']
+    username = auth['username']
+    password = auth['password']
     connection = insta485.model.get_db()
     cur = connection.execute(
         "SELECT password FROM users "
