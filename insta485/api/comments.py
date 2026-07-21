@@ -24,21 +24,25 @@ def post_comment():
         return flask.jsonify({
             "message": "Post not found"
         }), 404
-        
+
     data = flask.request.get_json()
     if data is None or "text" not in data:
         flask.abort(400)
     text = data["text"]
 
-    connection.execute(
+    cur = connection.execute(
         """ 
         INSERT INTO comments (owner, text, postid) VALUES (?, ?, ?)
         """,
         (logname, text, postid)
     )
-    commentid = connection.execute("SELECT last_insert_rowid()").fetchone()
+    commentid = cur.lastrowid
     return flask.jsonify({
         "commentid": commentid,
+        "lognameOwnsThis": True,
+        "owner": logname,
+        "ownerShowUrl": f"/users/{logname}/",
+        "text": text,
         "url": f"/api/v1/comments/{commentid}/"
     }), 201
 

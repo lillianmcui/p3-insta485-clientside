@@ -12,10 +12,9 @@ def api_update_likes():
             "message": "Forbidden",
             "status_code": 403
         }), 403
-
-    postid = flask.request.args["postid"]
     # check if logname has post liked
     connection = insta485.model.get_db()
+    postid = flask.request.args.get("postid", type=int)
     cur = connection.execute(
         "SELECT postid FROM posts WHERE postid = ?",
         (postid, )
@@ -29,7 +28,7 @@ def api_update_likes():
         (logname, postid)
     )
     like = cur.fetchone()
-
+    
     # like already exists
     if like:
         return flask.jsonify(
@@ -38,15 +37,15 @@ def api_update_likes():
                 "url": f"/api/v1/likes/{like['likeid']}/"
             }), 200
     # not liked yet, create like
-    connection.execute(
-        "INSERT INTO likes (owner, postid) VALUES (?, ?)",
-        (logname, postid)
+    cur = connection.execute(
+    "INSERT INTO likes (owner, postid) VALUES (?, ?)",
+    (logname, postid)
     )
+    likeid = cur.lastrowid
     return flask.jsonify({
-        "likeid": cur.lastrowid,
-        "url": f"/api/v1/likes/{cur.lastrowid}/"
+        "likeid": likeid,
+        "url": f"/api/v1/likes/{likeid}/"
     }), 201
-
 
 @insta485.app.route("/api/v1/likes/<int:likeid>/", methods=["DELETE"])
 def api_delete_likes(likeid):

@@ -46,7 +46,7 @@
     "dayjs": "^1.11.19",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "react-infinite-scroll-component": ">=6.1.1"
+    "react-infinite-scroll-component": "^7.2.1"
   },
   "engines": {
     "node": ">=24.0.0"
