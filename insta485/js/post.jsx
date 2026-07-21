@@ -10,6 +10,7 @@ dayjs.extend(utc);
 export default function Post({ url }) {
   const [imgUrl, setImgUrl] = useState(null);
   const [owner, setOwner] = useState(null);
+  const [ownerImgUrl, setOwnerImgUrl] = useState(null);
   const [now, setNow] = useState(dayjs());
   const [likes, setLikes] = useState(null);
   const [created, setCreated] = useState(null);
@@ -37,6 +38,7 @@ export default function Post({ url }) {
         if (!ignoreStaleRequest) {
           setImgUrl(data.imgUrl);
           setOwner(data.owner);
+          setOwnerImgUrl(data.ownerImgUrl);
           setLikes(data.likes);
           setCreated(data.created);
           setShowUrl(data.postShowUrl);
@@ -101,7 +103,7 @@ export default function Post({ url }) {
 
   async function handleSubmitComment() {
     if (!newCommentText.trim()) return;
-    
+
     try {
       const response = await fetch(`/api/v1/comments/?postid=${postid}`, {
         method: "POST",
@@ -146,6 +148,7 @@ export default function Post({ url }) {
     <div className="post">
       <img src={imgUrl} alt="post_image" onDoubleClick={handleDoubleClick} />
       <p>{owner}</p>
+      <img className="pfp" src={ownerImgUrl} alt="owner_image"/>
       <a href={showUrl} data-testid="post-time-ago">
         {dayjs.utc(created).fromNow()}
       </a>
