@@ -11,7 +11,7 @@ export default function Post({ url }) {
   const [imgUrl, setImgUrl] = useState(null);
   const [owner, setOwner] = useState(null);
   const [ownerImgUrl, setOwnerImgUrl] = useState(null);
-  const [now, setNow] = useState(dayjs());
+  const [, setNow] = useState(dayjs());
   const [likes, setLikes] = useState(null);
   const [created, setCreated] = useState(null);
   const [showUrl, setShowUrl] = useState(null);
@@ -129,7 +129,7 @@ export default function Post({ url }) {
       });
       if (!response.ok) throw Error(response.statusText);
       setComments((prevComments) =>
-        prevComments.filter((comment) => comment.commentid !== commentid)
+        prevComments.filter((comment) => comment.commentid !== commentid),
       );
     } catch (error) {
       console.log(error);
@@ -148,23 +148,34 @@ export default function Post({ url }) {
     <div className="post">
       <img src={imgUrl} alt="post_image" onDoubleClick={handleDoubleClick} />
       <p>{owner}</p>
-      <img className="pfp" src={ownerImgUrl} alt="owner_image"/>
+      <img className="pfp" src={ownerImgUrl} alt="owner_image" />
       <a href={showUrl} data-testid="post-time-ago">
         {dayjs.utc(created).fromNow()}
       </a>
-      <button data-testid="like-unlike-button" type="button" onClick={handleClick}>
+      <button
+        data-testid="like-unlike-button"
+        type="button"
+        onClick={handleClick}
+      >
         {likes.lognameLikesThis ? "Unlike" : "Like"}
       </button>
       <p>
         {likes.numLikes} {likes.numLikes === 1 ? "like" : "likes"}
       </p>
       {comments.map((comment) => (
-        <Comment key={comment.commentid} comment={comment} onDelete={handleDeleteComment} />
+        <Comment
+          key={comment.commentid}
+          comment={comment}
+          onDelete={handleDeleteComment}
+        />
       ))}
-      <form data-testid="comment-form" onSubmit={e => {
-      e.preventDefault();
-      handleSubmitComment();
-      }}>
+      <form
+        data-testid="comment-form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleSubmitComment();
+        }}
+      >
         <input
           type="text"
           value={newCommentText}

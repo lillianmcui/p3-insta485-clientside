@@ -1,7 +1,7 @@
 """Rest API for routes."""
+import hashlib
 import flask
 import insta485
-import hashlib
 
 
 @insta485.app.route('/api/v1/')
@@ -29,21 +29,21 @@ def authenticate_user():
     username = auth['username']
     password = auth['password']
     connection = insta485.model.get_db()
-    cur = connection.execute(
+    cursor = connection.execute(
         "SELECT password FROM users "
         "WHERE username = ? ",
         (username,)
     )
-    user = cur.fetchone()
+    user = cursor.fetchone()
     if not user:
         return None
     password_db_string = user["password"]
     # hash password
-    algorithm, salt, stored_hash = password_db_string.split("$")
-    hash_obj = hashlib.new(algorithm)
+    alg, salt, stored_hash = password_db_string.split("$")
+    hash_object = hashlib.new(alg)
     password_salted = salt + password
-    hash_obj.update(password_salted.encode('utf-8'))
-    password_hash = hash_obj.hexdigest()
+    hash_object.update(password_salted.encode('utf-8'))
+    password_hash = hash_object.hexdigest()
     if password_hash != stored_hash:
         return None
     return username

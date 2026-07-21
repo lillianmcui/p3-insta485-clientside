@@ -7,7 +7,7 @@ from insta485.api.routes import authenticate_user
 @insta485.app.route('/api/v1/posts/<int:postid_url_slug>/')
 def get_post(postid_url_slug):
     """Return post on postid."""
-    # auth user`
+    # auth user
     logname = authenticate_user()
     if not logname:
         return flask.jsonify({
@@ -45,13 +45,12 @@ def get_post(postid_url_slug):
         "SELECT likeid FROM likes WHERE owner = ? AND postid = ?",
         (logname, postid_url_slug)
     )
-    logname_like = logname_like_cur.fetchone()
-    if logname_like:
+    like_row = logname_like_cur.fetchone()
+
+    if like_row:
         logname_likes_this = True
-        like_url = f"/api/v1/likes/{logname_like['likeid']}/"
     else:
         logname_likes_this = False
-        like_url = None
 
     # comments
     comments_cur = connection.execute(
@@ -79,7 +78,7 @@ def get_post(postid_url_slug):
       "likes": {
           "lognameLikesThis": logname_likes_this,
           "numLikes": likes,
-          "url": like_url
+          "url": f"/api/v1/likes/{like_row['likeid']}/" if like_row else None
       },
       "owner": post["owner"],
       "ownerImgUrl": f"/uploads/{post['ownerImgUrl']}",
@@ -137,18 +136,17 @@ def get_newest_posts():
       for post in newest_posts
     ]
 
-    next = ''
+    next_page = ''
     if len(results) >= size:
-        next = (
+        next_page = (
           f"/api/v1/posts/?size={size}&page={page + 1}&postid_lte={postid_lte}"
         )
     if flask.request.query_string:
-      url = flask.request.full_path
+        url = flask.request.full_path
     else:
-      url = flask.request.path
-    
+        url = flask.request.path
     context = {
-      "next": next,
+      "next": next_page,
       "results": results,
       "url": url,
     }

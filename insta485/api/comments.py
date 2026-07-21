@@ -3,6 +3,7 @@ import flask
 import insta485
 from insta485.api.routes import authenticate_user
 
+
 @insta485.app.route("/api/v1/comments/", methods=["POST"])
 def post_comment():
     """Add a like to table."""
@@ -16,11 +17,11 @@ def post_comment():
     postid = flask.request.args["postid"]
 
     connection = insta485.model.get_db()
-    cur = connection.execute(
-    "SELECT postid FROM posts WHERE postid = ?",
+    cursor = connection.execute(
+        "SELECT postid FROM posts WHERE postid = ?",
         (postid, )
     )
-    if not cur.fetchone():
+    if not cursor.fetchone():
         return flask.jsonify({
             "message": "Post not found"
         }), 404
@@ -31,9 +32,7 @@ def post_comment():
     text = data["text"]
 
     cur = connection.execute(
-        """ 
-        INSERT INTO comments (owner, text, postid) VALUES (?, ?, ?)
-        """,
+        "INSERT INTO comments (owner, text, postid) VALUES (?, ?, ?)",
         (logname, text, postid)
     )
     commentid = cur.lastrowid

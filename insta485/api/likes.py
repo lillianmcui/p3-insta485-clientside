@@ -3,19 +3,20 @@ import flask
 import insta485
 from insta485.api.routes import authenticate_user
 
+
 @insta485.app.route("/api/v1/likes/", methods=["POST"])
 def api_update_likes():
     """Update likes table."""
-    logname = authenticate_user()
-    if not logname:
+    logged_user = authenticate_user()
+    if not logged_user:
         return flask.jsonify({
             "message": "Forbidden",
             "status_code": 403
         }), 403
     # check if logname has post liked
-    connection = insta485.model.get_db()
+    db_connection = insta485.model.get_db()
     postid = flask.request.args.get("postid", type=int)
-    cur = connection.execute(
+    cur = db_connection.execute(
         "SELECT postid FROM posts WHERE postid = ?",
         (postid, )
     )
@@ -23,12 +24,11 @@ def api_update_likes():
         return flask.jsonify({
             "message": "Post not found"
         }), 404
-    cur = connection.execute(
+    cur = db_connection.execute(
         "SELECT likeid FROM likes WHERE owner = ? AND postid = ?",
-        (logname, postid)
+        (logged_user, postid)
     )
     like = cur.fetchone()
-    
     # like already exists
     if like:
         return flask.jsonify(
@@ -37,15 +37,16 @@ def api_update_likes():
                 "url": f"/api/v1/likes/{like['likeid']}/"
             }), 200
     # not liked yet, create like
-    cur = connection.execute(
-    "INSERT INTO likes (owner, postid) VALUES (?, ?)",
-    (logname, postid)
+    cur = db_connection.execute(
+        "INSERT INTO likes (owner, postid) VALUES (?, ?)",
+        (logged_user, postid)
     )
     likeid = cur.lastrowid
     return flask.jsonify({
         "likeid": likeid,
         "url": f"/api/v1/likes/{likeid}/"
     }), 201
+
 
 @insta485.app.route("/api/v1/likes/<int:likeid>/", methods=["DELETE"])
 def api_delete_likes(likeid):
@@ -58,8 +59,8 @@ def api_delete_likes(likeid):
         }), 403
 
     # check if like exists
-    connection = insta485.model.get_db()
-    cur = connection.execute(
+    db_connection = insta485.model.get_db()
+    cur = db_connection.execute(
         "SELECT likeid FROM likes WHERE likeid = ?",
         (likeid, )
     )
@@ -69,7 +70,7 @@ def api_delete_likes(likeid):
         }), 404
 
     # check if logname owns like
-    cur = connection.execute(
+    cur = db_connection.execute(
         "SELECT likeid FROM likes WHERE owner = ? AND likeid = ?",
         (logname, likeid)
     )
@@ -83,7 +84,7 @@ def api_delete_likes(likeid):
             }), 403
 
     # liked by owner so delete
-    connection.execute(
+    db_connection.execute(
         "DELETE FROM likes WHERE likeid = ?",
         (likeid, )
     )
