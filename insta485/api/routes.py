@@ -47,3 +47,14 @@ def authenticate_user():
     if password_hash != stored_hash:
         return None
     return username
+
+
+def require_auth():
+    """Authenticate user and return (logname, error_response)."""
+    logname = authenticate_user()
+    if not logname:
+        return None, (flask.jsonify({
+            "message": "Forbidden",
+            "status_code": 403
+        }), 403)
+    return logname, None

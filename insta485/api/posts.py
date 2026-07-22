@@ -1,19 +1,15 @@
 """REST API for posts."""
 import flask
 import insta485
-from insta485.api.routes import authenticate_user
+from insta485.api.routes import require_auth
 
 
 @insta485.app.route('/api/v1/posts/<int:postid_url_slug>/')
 def get_post(postid_url_slug):
     """Return post on postid."""
-    # auth user
-    logname = authenticate_user()
-    if not logname:
-        return flask.jsonify({
-          "message": "Forbidden",
-          "status_code": 403
-        }), 403
+    logname, error = require_auth()
+    if error:
+        return error
     connection = insta485.model.get_db()
 
     # post/owner info
@@ -46,21 +42,15 @@ def get_post(postid_url_slug):
         (logname, postid_url_slug)
     )
     like_row = logname_like_cur.fetchone()
-
-    if like_row:
-        logname_likes_this = True
-    else:
-        logname_likes_this = False
-
+    logname_likes_this = like_row is not None
     # comments
     comments_cur = connection.execute(
           "SELECT commentid, owner, text FROM comments "
           "WHERE postid = ? ORDER BY commentid ASC",
           (postid_url_slug,)
       )
-    comments_rows = comments_cur.fetchall()
     comments = []
-    for row in comments_rows:
+    for row in comments_cur.fetchall():
         comments.append({
             "commentid": row["commentid"],
             "lognameOwnsThis": row["owner"] == logname,
@@ -93,12 +83,9 @@ def get_post(postid_url_slug):
 @insta485.app.route('/api/v1/posts/')
 def get_newest_posts():
     """Return the 10 newest posts from following or logname."""
-    logname = authenticate_user()
-    if not logname:
-        return flask.jsonify({
-          "message": "Forbidden",
-          "status_code": 403
-        }), 403
+    logname, error = require_auth()
+    if error:
+        return error
 
     try:
         size = flask.request.args.get('size', 10, type=int)

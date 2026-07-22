@@ -1,18 +1,15 @@
 """REST API for likes."""
 import flask
 import insta485
-from insta485.api.routes import authenticate_user
+from insta485.api.routes import require_auth
 
 
 @insta485.app.route("/api/v1/likes/", methods=["POST"])
 def api_update_likes():
     """Update likes table."""
-    logged_user = authenticate_user()
-    if not logged_user:
-        return flask.jsonify({
-            "message": "Forbidden",
-            "status_code": 403
-        }), 403
+    logname, error = require_auth()
+    if error:
+        return error
     # check if logname has post liked
     db_connection = insta485.model.get_db()
     postid = flask.request.args.get("postid", type=int)
@@ -26,7 +23,7 @@ def api_update_likes():
         }), 404
     cur = db_connection.execute(
         "SELECT likeid FROM likes WHERE owner = ? AND postid = ?",
-        (logged_user, postid)
+        (logname, postid)
     )
     like = cur.fetchone()
     # like already exists
@@ -39,7 +36,7 @@ def api_update_likes():
     # not liked yet, create like
     cur = db_connection.execute(
         "INSERT INTO likes (owner, postid) VALUES (?, ?)",
-        (logged_user, postid)
+        (logname, postid)
     )
     likeid = cur.lastrowid
     return flask.jsonify({
@@ -51,12 +48,9 @@ def api_update_likes():
 @insta485.app.route("/api/v1/likes/<int:likeid>/", methods=["DELETE"])
 def api_delete_likes(likeid):
     """Delete from likes table."""
-    logname = authenticate_user()
-    if not logname:
-        return flask.jsonify({
-            "message": "Forbidden",
-            "status_code": 403
-        }), 403
+    logname, error = require_auth()
+    if error:
+        return error
 
     # check if like exists
     db_connection = insta485.model.get_db()

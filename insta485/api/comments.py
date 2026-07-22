@@ -1,18 +1,15 @@
 """REST API for comments."""
 import flask
 import insta485
-from insta485.api.routes import authenticate_user
+from insta485.api.routes import require_auth
 
 
 @insta485.app.route("/api/v1/comments/", methods=["POST"])
 def post_comment():
     """Add a like to table."""
-    logname = authenticate_user()
-    if not logname:
-        return flask.jsonify({
-            "message": "Forbidden",
-            "status_code": 403
-        }), 403
+    logname, error = require_auth()
+    if error:
+        return error
 
     postid = flask.request.args["postid"]
 
@@ -49,12 +46,9 @@ def post_comment():
 @insta485.app.route("/api/v1/comments/<int:commentid>/", methods=["DELETE"])
 def delete_comment(commentid):
     """Delete a comment from the table."""
-    logname = authenticate_user()
-    if not logname:
-        return flask.jsonify({
-            "message": "Forbidden",
-            "status_code": 403
-        }), 403
+    logname, error = require_auth()
+    if error:
+        return error
 
     connection = insta485.model.get_db()
     cur = connection.execute(
